@@ -5,6 +5,7 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from django.utils.timezone import localtime
 from .models import Pokemon, PokemonEntity
+from django.shortcuts import get_object_or_404
 
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
@@ -30,9 +31,8 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
-    pokemon_entities = PokemonEntity.objects.all()
     now = localtime()
-    pokemon_entities = pokemon_entities.filter(appeared_at__lt=now, disappeared_at__gt=now)
+    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lt=now, disappeared_at__gt=now)
     for pokemon_entity in pokemon_entities:
         add_pokemon(
             folium_map, pokemon_entity.latitude,
@@ -56,7 +56,7 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    requested_pokemon = Pokemon.objects.get(id=pokemon_id)
+    requested_pokemon = get_object_or_404(Pokemon, id=pokemon_id)
 
     pokemon_entities = PokemonEntity.objects.filter(pokemon=requested_pokemon)
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
@@ -68,24 +68,22 @@ def show_pokemon(request, pokemon_id):
         )
 
     previous_pokemon = requested_pokemon.previous_evolution
+    previous_evolution = {}
     if previous_pokemon:
         previous_evolution = {
             'title_ru': previous_pokemon.title_ru,
             'pokemon_id': previous_pokemon.id,
             'img_url': previous_pokemon.image.url
         }
-    else:
-        previous_evolution = {}
 
     next_pokemon = requested_pokemon.next_evolutions.first()
+    next_evolution = {}
     if next_pokemon:
         next_evolution = {
             'title_ru': next_pokemon.title_ru,
             'pokemon_id': next_pokemon.id,
             'img_url': next_pokemon.image.url
         }
-    else:
-        next_evolution = {}
 
     pokemon_info = {
         'img_url': request.build_absolute_uri(requested_pokemon.image.url),
