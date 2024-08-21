@@ -16,13 +16,16 @@ class Pokemon(models.Model):
 
 
 class PokemonEntity(models.Model):
-    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE)
+    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, verbose_name='entities')
     latitude = models.FloatField('широта')
     longitude = models.FloatField('долгота')
-    appeared_at = models.DateTimeField('время появления', default=timezone.now())
-    disappeared_at = models.DateTimeField('время исчезновения', default=timezone.now())
+    appeared_at = models.DateTimeField('время появления')
+    disappeared_at = models.DateTimeField('время исчезновения')
     level = models.IntegerField('уровень', blank=True)
     health = models.IntegerField('здоровье', blank=True)
     strength = models.IntegerField('сила', blank=True)
     defence = models.IntegerField('защита', blank=True)
     stamina = models.IntegerField('выносливость', blank=True)
+
+    def __str__(self):
+        return f'self.pokemon {self.latitude} {self.longitude}'
